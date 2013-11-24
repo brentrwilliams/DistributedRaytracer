@@ -11,26 +11,32 @@
 #include <iostream>
 #include <string>
 #include <cstddef>
+#include <sstream>
 
 #include "Mesh.hpp"
 #include "BoundingBox.hpp"
 
-#define BUFFER_SIZE
+#define BUFFER_SIZE 256
+#define STRING_SIZE 256
 
 class OBJReader
 {
    public:
-      char *fileName;
+      std::string objFileName;
+      std::string mtlFileName;
+      BoundingBox sceneBoundingBox;
       
-      OBJReader(char* fileName);
+      OBJReader(char* objFileName);
       ~OBJReader();
       Mesh getMesh();
       
    private:
-      std::ifstream file;
+      std::ifstream objFile;
       
       BoundingBox getSceneBoundingBox();
+      std::string getMtlFileName();
+      std::string trim(const std::string& str);
       
-}
+};
 
 #endif

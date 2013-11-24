@@ -7,11 +7,11 @@
 #ifndef FACE_HPP
 #define FACE_HPP
 
-public class Face
+class Face
 {
    public:
       int numVertices;
       int vertexNumbers[4];
-}
+};
 
 #endif

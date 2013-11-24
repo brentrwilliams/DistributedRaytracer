@@ -3,26 +3,43 @@
  *
  * @author Brent Williams brent.robert.williams@gmail.com
  */
- 
-OBJReader::OBJReader(const char* fileName)
+
+#include "OBJReader.hpp"
+
+OBJReader::OBJReader(char* objFileName)
 {
-   this.fileName = fileName;
+   this->objFileName = objFileName;
    
-   file.open(fileName, std::ifstream::in);
-   if (!file.good())
+   objFile.open(objFileName, std::ifstream::in);
+   if (!objFile.good())
    {
-      std::cerr << "Unable to open file " + fileName << "\n";
+      std::cerr << "Unable to open file " << objFileName << "\n";
       exit (EXIT_FAILURE);
    }
+   
+   sceneBoundingBox = getSceneBoundingBox();
+   mtlFileName = getMtlFileName();
 }
 
 OBJReader::~OBJReader()
 {
-   file.close();
+   objFile.close();
 }
 
 Mesh OBJReader::getMesh()
 {
+   char fileBuffer[BUFFER_SIZE];
+   std::string stringBuffer;
+   
+   while(objFile.good())
+   {
+      objFile.getline(fileBuffer, BUFFER_SIZE);
+      stringBuffer = fileBuffer;
+      stringBuffer = trim(stringBuffer);
+      
+      
+   }
+   
    Mesh mesh;
    return mesh;
 }
@@ -35,13 +52,14 @@ BoundingBox OBJReader::getSceneBoundingBox()
    float minX, minY, minZ, maxX, maxY, maxZ, x, y, z; 
 
    //Fill the start values
-   while(file.good() && !foundFirst)
+   while(objFile.good() && !foundFirst)
    {
-      stringBuffer = file.getLine(buffer, BUFFER_SIZE);
+      objFile.getline(fileBuffer, BUFFER_SIZE);
+      stringBuffer = fileBuffer;
       stringBuffer = trim(stringBuffer);
-      if (stringBuffer[0] == 'v')
+      if (stringBuffer[0] == 'v' && stringBuffer[1] != 't')
       {
-         stringBuffer = stringBuffer.substring(1);
+         stringBuffer = stringBuffer.substr(1);
          std::stringstream ss(stringBuffer);
          ss >> maxX >> maxY >> maxZ;
          
@@ -52,13 +70,14 @@ BoundingBox OBJReader::getSceneBoundingBox()
       }
    }
    
-   while(file.good())
+   while(objFile.good())
    {
-      stringBuffer = file.getLine(buffer, BUFFER_SIZE);
+      objFile.getline(fileBuffer, BUFFER_SIZE);
+      stringBuffer = fileBuffer;
       stringBuffer = trim(stringBuffer);
-      if (stringBuffer[0] == 'v')
+      if (stringBuffer[0] == 'v' && stringBuffer[1] != 't')
       {
-         stringBuffer = stringBuffer.substring(1);
+         stringBuffer = stringBuffer.substr(1);
          std::stringstream ss(stringBuffer);
          ss >> x >> y >> z;
          
@@ -80,26 +99,61 @@ BoundingBox OBJReader::getSceneBoundingBox()
    }
 
    //Put the file stream back to the start and clear the state
-   file.(0, file.beg);
-   file.clear();
+   objFile.seekg(0, objFile.beg);
+   objFile.clear();
    
-   vec3 mins(minX, minY, minZ);
-   vec3 maxs(maxX, maxY, maxZ);
+   glm::vec3 mins(minX, minY, minZ);
+   glm::vec3 maxs(maxX, maxY, maxZ);
    BoundingBox boundingBox(mins, maxs);
    
    return boundingBox;
 }
 
+std::string OBJReader::getMtlFileName()
+{
+   std::string mtl = "mtllib";
+   std::string stringBuffer;
+   std::string whitespace = " \t";
+   char fileBuffer[BUFFER_SIZE];
+   std::string fileName;
+   size_t mtlEnd;
+   bool found = false;
+   
+   objFile.seekg(0, objFile.beg);
+   objFile.clear();
+   
+   while(objFile.good() && !found)
+   {
+      objFile.getline(fileBuffer, BUFFER_SIZE);
+      stringBuffer = fileBuffer;
+      stringBuffer = trim(stringBuffer);
+      mtlEnd = stringBuffer.find_first_of(whitespace);
+
+      if (stringBuffer.compare(0, mtlEnd, mtl) == 0)
+      {
+         found = true;
+         fileName = stringBuffer.substr(mtlEnd);
+         fileName = trim(fileName);
+      }
+   }
+   
+   //Put the file stream back to the start and clear the state
+   objFile.seekg(0, objFile.beg);
+   objFile.clear();
+   
+   return fileName;
+}
+
 //Get rid of leading and trailing whitespace
 std::string OBJReader::trim(const std::string& str)
 {
-   std::string& whitespace = " \t";
-   std::string::iterator strBegin = str.find_first_not_of(whitespace);
-   if (strBegin == std::string::npos)
-      return "";
-
-   std::string::iterator strEnd = str.find_last_not_of(whitespace);
-   std::string::iterator strRange = strEnd - strBegin + 1;
-
-   return str.substr(strBegin, strRange);
+   std::string whitespace = " \t";
+   std::string newStr = str;
+   size_t start = newStr.find_first_not_of(whitespace);
+   size_t end = newStr.find_last_not_of(whitespace);
+   
+   if (start == std::string::npos)
+        return ""; // no content
+   
+   return str.substr(start, end-start+1);
 }
