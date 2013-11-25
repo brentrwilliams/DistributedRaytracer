@@ -18,6 +18,7 @@
 #include "Mesh.hpp"
 #include "BoundingBox.hpp"
 #include "Face.hpp"
+#include "TextureCoordinates.hpp"
 
 #define BUFFER_SIZE 256
 #define STRING_SIZE 256

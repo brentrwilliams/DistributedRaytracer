@@ -31,74 +31,49 @@ Mesh OBJReader::getMesh()
    char fileBuffer[BUFFER_SIZE];
    char charBuffer[BUFFER_SIZE];
    char* word;
-   bool found = false;
+   bool gHit = false;
+   bool done = false;
    std::string stringBuffer;
    Mesh mesh;
    std::vector<float> vertices;
    std::vector<Face> faces;
+   std::vector<TextureCoordinates> textureCoordinates;
    
-   objFile.seekg(0, objFile.beg);
-   objFile.clear();
-   
-   //Get to the first vertex line and process it
-   while(objFile.good() && !found)
+   while(objFile.good() && !done)
    {
       objFile.getline(fileBuffer, BUFFER_SIZE);
       stringBuffer = fileBuffer;
       strcpy(charBuffer, stringBuffer.c_str());
       word = strtok(charBuffer, " \t");
       
-      if (word != NULL && strcmp(word, "v"))
+      if (gHit && word != NULL && strcmp(word, "v") == 0)
       {
-         found = true;
+         //reset the file ptr to before that line
+         objFile.seekg(strlen(fileBuffer)+1, objFile.cur);
+         done = true;
+      }
+      else if (word != NULL && strcmp(word, "v") == 0)
+      {
+         word = strtok(NULL, " \t");
+         while (word != NULL)
+            vertices.push_back(atof(word));
+      }
+      else if (word != NULL && strcmp(word, "vt") == 0)
+      {
+         TextureCoordinates texCoords;
+         texCoords.numCoordinates = 0;
          
          word = strtok(NULL, " \t");
          while (word != NULL)
          {
-            vertices.push_back(atof(word));
+            texCoords.coordinates[texCoords.numCoordinates] = atoi(word);
+            texCoords.numCoordinates++;
          }
+         
+         textureCoordinates.push_back(texCoords);
       }
-   }
-   
-   found = false;
-   //Get all the vertices, the group name, the material and the first face
-   while(objFile.good() && !found)
-   {
-      objFile.getline(fileBuffer, BUFFER_SIZE);
-      stringBuffer = fileBuffer;
-      strcpy(charBuffer, stringBuffer.c_str());
-      word = strtok(charBuffer, " \t");
-      
-      if (word != NULL && strcmp(word, "v"))
+      else if (word != NULL && strcmp(word, "f") == 0)
       {
-         word = strtok(NULL, " \t");
-         while (word != NULL)
-         {
-            vertices.push_back(atof(word));
-         }
-      }
-      
-      if (word != NULL && strcmp(word, "g"))
-      {
-         word = strtok(NULL, " \t");
-         if (word != NULL)
-            mesh.name = word;
-         else
-            mesh.name = "";
-      }
-      
-      if (word != NULL && strcmp(word, "usemtl"))
-      {
-         word = strtok(NULL, " \t");
-         if (word != NULL)
-            mesh.material = word;
-         else
-            mesh.material = "";
-      }
-      
-      if (word != NULL && strcmp(word, "f"))
-      {
-         found = true;
          Face face;
          face.numVertices = 0;
          
@@ -111,9 +86,42 @@ Mesh OBJReader::getMesh()
          
          faces.push_back(face);
       }
+      else if (word != NULL && strcmp(word, "g") == 0)
+      {
+         gHit = true;
+         word = strtok(NULL, " \t");
+         if (word != NULL)
+            mesh.name = word;
+         else
+            mesh.name = "";
+      }
+      else if (word != NULL && strcmp(word, "usemtl") == 0)
+      {
+         word = strtok(NULL, " \t");
+         if (word != NULL)
+            mesh.material = word;
+         else
+            mesh.material = "";
+      }
+      
    }
    
+   int i;
+   std::cout << "Mesh: " << mesh.name << "\n";
+   if (!mesh.material.empty())
+      std::cout << "\tMaterial: " << mesh.material << "\n";
    
+   std::cout << "\tVertices: \n";
+   for(i = 0; i < vertices.size()/3; i+=3)
+      std::cout << "\t\t(" << vertices[i] << ", " << vertices[i+1] << ", " << vertices[i+2] << ")\n";
+   
+   std::cout << "\tTexture Coordinates: \n";
+   for(i = 0; i < textureCoordinates.size(); i++)
+      std::cout << "\t\t" << textureCoordinates[i] << "\n";
+   
+   std::cout << "\tFaces: \n";
+   for(i = 0; i < faces.size(); i++)
+      std::cout << "\t\t" << faces[i] << "\n";
    
    return mesh;
 }

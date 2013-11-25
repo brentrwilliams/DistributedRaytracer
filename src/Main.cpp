@@ -14,9 +14,13 @@ int main(int argc, char* argv[])
       exit (EXIT_FAILURE);
    }
    
+   Mesh tempMesh;
    OBJReader objFile(argv[1]);
    std:: cout << objFile.sceneBoundingBox << "\n";
    std:: cout << objFile.mtlFileName << "\n";
+   
+   tempMesh = objFile.getMesh();
+   
    
    return 0;
 }
