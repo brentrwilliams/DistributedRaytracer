@@ -29,18 +29,92 @@ OBJReader::~OBJReader()
 Mesh OBJReader::getMesh()
 {
    char fileBuffer[BUFFER_SIZE];
+   char charBuffer[BUFFER_SIZE];
+   char* word;
+   bool found = false;
    std::string stringBuffer;
+   Mesh mesh;
+   std::vector<float> vertices;
+   std::vector<Face> faces;
    
-   while(objFile.good())
+   objFile.seekg(0, objFile.beg);
+   objFile.clear();
+   
+   //Get to the first vertex line and process it
+   while(objFile.good() && !found)
    {
       objFile.getline(fileBuffer, BUFFER_SIZE);
       stringBuffer = fileBuffer;
-      stringBuffer = trim(stringBuffer);
+      strcpy(charBuffer, stringBuffer.c_str());
+      word = strtok(charBuffer, " \t");
       
-      
+      if (word != NULL && strcmp(word, "v"))
+      {
+         found = true;
+         
+         word = strtok(NULL, " \t");
+         while (word != NULL)
+         {
+            vertices.push_back(atof(word));
+         }
+      }
    }
    
-   Mesh mesh;
+   found = false;
+   //Get all the vertices, the group name, the material and the first face
+   while(objFile.good() && !found)
+   {
+      objFile.getline(fileBuffer, BUFFER_SIZE);
+      stringBuffer = fileBuffer;
+      strcpy(charBuffer, stringBuffer.c_str());
+      word = strtok(charBuffer, " \t");
+      
+      if (word != NULL && strcmp(word, "v"))
+      {
+         word = strtok(NULL, " \t");
+         while (word != NULL)
+         {
+            vertices.push_back(atof(word));
+         }
+      }
+      
+      if (word != NULL && strcmp(word, "g"))
+      {
+         word = strtok(NULL, " \t");
+         if (word != NULL)
+            mesh.name = word;
+         else
+            mesh.name = "";
+      }
+      
+      if (word != NULL && strcmp(word, "usemtl"))
+      {
+         word = strtok(NULL, " \t");
+         if (word != NULL)
+            mesh.material = word;
+         else
+            mesh.material = "";
+      }
+      
+      if (word != NULL && strcmp(word, "f"))
+      {
+         found = true;
+         Face face;
+         face.numVertices = 0;
+         
+         word = strtok(NULL, " \t");
+         while (word != NULL)
+         {
+            face.vertexNumbers[face.numVertices] = atoi(word);
+            face.numVertices++;
+         }
+         
+         faces.push_back(face);
+      }
+   }
+   
+   
+   
    return mesh;
 }
 

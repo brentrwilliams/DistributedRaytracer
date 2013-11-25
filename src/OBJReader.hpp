@@ -10,11 +10,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <string.h>
 #include <cstddef>
 #include <sstream>
+#include <vector>
 
 #include "Mesh.hpp"
 #include "BoundingBox.hpp"
+#include "Face.hpp"
 
 #define BUFFER_SIZE 256
 #define STRING_SIZE 256
