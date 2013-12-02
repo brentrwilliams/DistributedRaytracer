@@ -10,6 +10,7 @@
 #include "OBJReader.hpp"
 #include "Mesh.hpp"
 
-#include <iostream> 
+#include <iostream>
+#include <vector> 
 
 #endif

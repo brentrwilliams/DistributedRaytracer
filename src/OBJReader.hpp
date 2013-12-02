@@ -32,6 +32,7 @@ class OBJReader
       
       OBJReader(char* objFileName);
       ~OBJReader();
+      bool hasNextMesh();
       Mesh getMesh();
       
    private:
