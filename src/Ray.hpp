@@ -15,38 +15,35 @@
 #include <fstream>
 #include <string.h>
 
-using namespace std;
-using namespace glm;
-
 typedef struct
 {
    float l;
    float r;
    float b;
    float t;
-   vec3 u;
-   vec3 v;
-   vec3 w;
+   glm::vec3 u;
+   glm::vec3 v;
+   glm::vec3 w;
    int imgWidth;
    int imgHeight;
    int i; // Column index of image
    int j; // Row index of image
-   vec3 p_0;
+   glm::vec3 p_0;
 } RayCalcInfo;
 
 class Ray
 {
    public:
       Ray();
-      Ray(vec3 p, vec3 d);
+      Ray(glm::vec3 p, glm::vec3 d);
       Ray(const Ray& ray);
-      Ray(vec3 p, vec3 d, float ior);
-      friend ostream& operator<<(ostream& os, const Ray& ray);
+      Ray(glm::vec3 p, glm::vec3 d, float ior);
+      friend std::ostream& operator<<(std::ostream& os, const Ray& ray);
       void calculateRay(RayCalcInfo rayCalcInfo, int x, int y);
-      void toObjectSpace(mat4 invTrans);
+      void toObjectSpace(glm::mat4 invTrans);
 
-      vec3 p;
-      vec3 d; 
+      glm::vec3 p;
+      glm::vec3 d; 
       float ior; //ior of the space before intersection
 };
 

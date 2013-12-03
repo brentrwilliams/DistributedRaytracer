@@ -10,14 +10,14 @@ Ray::Ray()
 {   
 }
 
-Ray::Ray(vec3 p, vec3 d)
+Ray::Ray(glm::vec3 p, glm::vec3 d)
 {
    this->p = p; //Point
    this->d = d; //Direction
    ior = 1.0f; //Index of Refraction
 }
 
-Ray::Ray(vec3 p, vec3 d, float ior)
+Ray::Ray(glm::vec3 p, glm::vec3 d, float ior)
 {
    this->p = p; //Point
    this->d = d; //Direction
@@ -35,7 +35,7 @@ Ray::Ray(const Ray& ray)
 void Ray::calculateRay(RayCalcInfo r, int x, int y)
 {
    float u_s, v_s, w_s = -1;
-   vec3 sPrime;
+   glm::vec3 sPrime;
    
    u_s = r.l + (r.r - r.l) * ((r.i + 0.1667 + (0.3333 * x)) / r.imgWidth);
    v_s = r.b + (r.t - r.b) * ((r.j + 0.1667 + (0.3333 * y)) / r.imgHeight);
@@ -47,10 +47,10 @@ void Ray::calculateRay(RayCalcInfo r, int x, int y)
    d = d / glm::length(d);
 }
 
-void Ray::toObjectSpace(mat4 invTrans)
+void Ray::toObjectSpace(glm::mat4 invTrans)
 {
-   vec4 tempP(p.x, p.y, p.z, 1.0f);
-   vec4 tempD(d.x, d.y, d.z, 0.0f);
+   glm::vec4 tempP(p.x, p.y, p.z, 1.0f);
+   glm::vec4 tempD(d.x, d.y, d.z, 0.0f);
    
    tempP = invTrans * tempP;
    tempD = invTrans * tempD;
@@ -64,7 +64,7 @@ void Ray::toObjectSpace(mat4 invTrans)
    d.z = tempD.z;
 }
 
-ostream& operator<<(ostream& os, const Ray& ray)
+std::ostream& operator<<(std::ostream& os, const Ray& ray)
 {
    os << "point: " << "< " << ray.p.x << " " << ray.p.y << " " << ray.p.z << " >\n";
    os << "direction: " << "< " << ray.d.x << " " << ray.d.y << " " << ray.d.z << " >\n";

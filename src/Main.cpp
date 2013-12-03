@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[])
 {
-   if (argc < 5)
+   if (argc < 6)
    {
       std::cerr << "Invalid number of arguments\n";
       exit (EXIT_FAILURE);
@@ -18,8 +18,11 @@ int main(int argc, char* argv[])
    int imageHeight = atoi(argv[2]); 
    char* objFileName = argv[3];
    char* cameraFileName = argv[4];
+   char* outputFileName = argv[5];
    
    Raytracer raytracer(imageWidth, imageHeight, objFileName, cameraFileName);
+   raytracer.trace();
+   raytracer.saveImage(outputFileName);
    
    /*
    Camera camera(argv[2]);
