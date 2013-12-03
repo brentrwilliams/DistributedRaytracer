@@ -29,7 +29,7 @@ class Triangle
       BoundingBox boundingBox;
       
       Triangle();
-      Triangle(glm::vec3 v1, glm::vec3 v2,glm::vec3 v3);
+      Triangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec2 uv1, glm::vec2 uv2, glm::vec2 uv3);
       friend std::ostream& operator<<(std::ostream& os, const Triangle& triangle);
       bool intersect(Ray ray, float *t);
       glm::vec3 getNormal(glm::vec3 pt);

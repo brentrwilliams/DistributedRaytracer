@@ -29,17 +29,18 @@ Raytracer::~Raytracer()
 void Raytracer::trace()
 {
    // Get all the meshes
-   std::vector<Mesh*> meshes;
+   MeshData* tempMeshData;
    Mesh* tempMesh;
    
-   tempMesh = objReader->getMesh();
-   //std::cout << "\n" << *tempMesh  << "\n";
    while (objReader->hasNextMesh())
    {
-      //std::cout << "\n" << *tempMesh  << "\n";
+      tempMeshData = objReader->getMeshData();
+      tempMesh = new Mesh(*tempMeshData);
+      std::cout << "\n" << *tempMesh  << "\n";
       meshes.push_back(tempMesh);
-      tempMesh = objReader->getMesh();
    }
+   
+   std::cout << "Num meshes: " << meshes.size() << "\n";
    
    //Calculate rays
    int i, j;
@@ -96,15 +97,11 @@ glm::vec3 Raytracer::calculatePixelColor(RayCalcInfo rayCalcInfo, int i, int j)
    Ray ray;
    vec3 color(0,0,0);
    int x, y;
-   float z, minZ = MAX_FLOAT;
-   
-   z = 0.0f;
+   float z = MAX_FLOAT;
    ray.calculateRay(rayCalcInfo, 1, 1); 
-   color = traceRay(ray, &(z));
-         
-   minZ = z;
+   color = traceRay(ray, &z);
    
-   zBuffer[i][j] = minZ;
+   zBuffer[i][j] = z;
    return color;
 }
 
@@ -123,7 +120,9 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    
    if (intersected && t < (*zValue)) 
    {
-      
+      color.x = 1.0;
+      color.y = 1.0;
+      color.z = 1.0;
    }
    
    return color;
@@ -131,5 +130,27 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
 
 bool Raytracer::intersectGeometry(Ray ray, float *t)
 {
-   return false;
+   int i, j;
+   float currT;
+   Mesh* currMesh;
+   bool hit = false;
+   for (i = 0; i < meshes.size(); i++)
+   {
+      currMesh = meshes[i];
+      
+      if (currMesh->boundingBox.intersect(ray))
+      {
+         for (j = 0; j < currMesh->triangles.size(); j++)
+         {
+            if(currMesh->triangles[j].intersect(ray, &currT))
+            {
+               hit = true;
+               
+               if (currT < (*t))
+                  *t = currT;
+            }
+         }
+      }
+   }
+   return hit;
 }

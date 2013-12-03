@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
    char* cameraFileName = argv[4];
    char* outputFileName = argv[5];
    
+   
    Raytracer raytracer(imageWidth, imageHeight, objFileName, cameraFileName);
    raytracer.trace();
    raytracer.saveImage(outputFileName);
@@ -29,18 +30,16 @@ int main(int argc, char* argv[])
    
    std::cout << camera << "\n"; 
    
-   std::vector<Mesh*> meshes;
-   Mesh* tempMesh;
+   MeshData* tempMeshData;
    OBJReader objFile(objFileName);
    std:: cout << objFile.sceneBoundingBox << "\n";
    std:: cout << objFile.mtlFileName << "\n";
    
    while (objFile.hasNextMesh())
    {
-      tempMesh = objFile.getMesh();
-      std::cout << "\n" << *tempMesh  << "\n";
-      meshes.push_back(tempMesh);
-   }
-   */
+      tempMeshData = objFile.getMeshData();
+      std::cout << "\n" << *tempMeshData  << "\n";
+   }*/
+   
    return 0;
 }

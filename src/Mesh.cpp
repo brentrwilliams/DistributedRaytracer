@@ -8,42 +8,38 @@
 
 Mesh::Mesh()
 {
-   triangleVertices = new std::vector<float>();
-   textureCoordinates = new std::vector<float>();
-   name = new std::string();
-   material = new std::string();
 }
 
-Mesh::Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates, std::string* name, std::string* material)
+Mesh::Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates, char* name, char* material)
 {
-   this->triangleVertices = triangleVertices;
-   this->textureCoordinates = textureCoordinates;
    this->name = name;
    this->material = material;
+   verticesAndTexCoordsToTriangles(triangleVertices, textureCoordinates);
+   calculateBoundingBox();
+}
+
+Mesh::Mesh(MeshData meshData)
+{
+   this->name = *meshData.name;
+   this->material = *meshData.material;
+   verticesAndTexCoordsToTriangles(meshData.triangleVertices, meshData.textureCoordinates);
+   calculateBoundingBox();
 }
 
 Mesh::~Mesh()
 {
-   delete triangleVertices;
-   delete textureCoordinates;
-   delete name;
-   delete material;
 }
 
 std::ostream &operator<<(std::ostream &out, Mesh mesh)
 {
    int i;
-   out << "Mesh: " << *mesh.name << "\n";
-   if (!mesh.material->empty())
-      out << "\tMaterial: " << *mesh.material << "\n";
+   out << "Mesh: " << mesh.name << "\n";
+   out << "\tMaterial: " << mesh.material << "\n";
+   out << "Bounding Box:\n\t" << mesh.boundingBox << "\n"; 
       
-   out << "\tVertices(" << mesh.triangleVertices->size() << "): \n";
-   for(i = 0; i < mesh.triangleVertices->size(); i+=3)
-      out << "\t\t(" << mesh.triangleVertices->at(i) << ", " << mesh.triangleVertices->at(i+1) << ", " << mesh.triangleVertices->at(i+2) << ")\n";
-   
-   out << "\tTexture Coordinates: \n";
-   for(i = 0; i < mesh.textureCoordinates->size(); i+=3)
-      out << "\t\t(" << mesh.textureCoordinates->at(i) << ", " << mesh.textureCoordinates->at(i+1) << ")\n";
+   out << "\nTriangles(" << mesh.triangles.size() << "): \n";
+   for(i = 0; i < mesh.triangles.size(); i++)
+      out << mesh.triangles[i] << "\n";
 
    return out;
 }
@@ -51,27 +47,46 @@ std::ostream &operator<<(std::ostream &out, Mesh mesh)
 void Mesh::calculateBoundingBox()
 {
    int i;
-   glm::vec3 first((*triangleVertices)[0], (*triangleVertices)[1], (*triangleVertices)[2]);
+   boundingBox.maxs = triangles[0].boundingBox.maxs;
+   boundingBox.mins = triangles[0].boundingBox.mins;
    
-   boundingBox.maxs = first;
-   boundingBox.mins = first;
-   
-   for (i = 3; i < triangleVertices->size(); i+=3)
+   for (i = 1; i < triangles.size(); i++)
    {
-      glm::vec3 current((*triangleVertices)[i], (*triangleVertices)[i+1], (*triangleVertices)[i+2]);
-      if (current.x > boundingBox.maxs.x)
-         boundingBox.maxs.x = current.x;
-      if (current.x < boundingBox.mins.x)
-         boundingBox.mins.x = current.x;
+      glm::vec3 currMaxs = triangles[i].boundingBox.maxs;
+      glm::vec3 currMins = triangles[i].boundingBox.mins;
+      if (currMaxs.x > boundingBox.maxs.x)
+         boundingBox.maxs.x = currMaxs.x;
+      if (currMins.x < boundingBox.mins.x)
+         boundingBox.mins.x = currMins.x;
       
-      if (current.y > boundingBox.maxs.y)
-         boundingBox.maxs.y = current.y;
-      if (current.y < boundingBox.mins.y)
-         boundingBox.mins.y = current.y;
+      if (currMaxs.y > boundingBox.maxs.y)
+         boundingBox.maxs.y = currMaxs.y;
+      if (currMins.y < boundingBox.mins.y)
+         boundingBox.mins.y = currMins.y;
       
-      if (current.z > boundingBox.maxs.z)
-         boundingBox.maxs.z = current.z;
-      if (current.z < boundingBox.mins.z)
-         boundingBox.mins.z = current.z;
+      if (currMaxs.z > boundingBox.maxs.z)
+         boundingBox.maxs.z = currMaxs.z;
+      if (currMins.z < boundingBox.mins.z)
+         boundingBox.mins.z = currMins.z;
+   }
+}
+
+void Mesh::verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates)
+{
+   int i;
+   int numTriangles = triangleVertices->size() / VERTS_PER_TRI;
+   
+   for (i = 0; i < numTriangles; i++)
+   {
+      glm::vec3 v1(triangleVertices->at((i*VERTS_PER_TRI)), triangleVertices->at((i*VERTS_PER_TRI)+1), triangleVertices->at((i*VERTS_PER_TRI)+2));
+      glm::vec3 v2(triangleVertices->at((i*VERTS_PER_TRI)+3), triangleVertices->at((i*VERTS_PER_TRI)+4), triangleVertices->at((i*VERTS_PER_TRI)+5));
+      glm::vec3 v3(triangleVertices->at((i*VERTS_PER_TRI)+6), triangleVertices->at((i*VERTS_PER_TRI)+7), triangleVertices->at((i*VERTS_PER_TRI)+8)); 
+      
+      glm::vec2 uv1(textureCoordinates->at((i*UV_COORDS_PER_TRI)), textureCoordinates->at((i*UV_COORDS_PER_TRI)+1));
+      glm::vec2 uv2(textureCoordinates->at((i*UV_COORDS_PER_TRI)+2), textureCoordinates->at((i*UV_COORDS_PER_TRI)+3));
+      glm::vec2 uv3(textureCoordinates->at((i*UV_COORDS_PER_TRI)+4), textureCoordinates->at((i*UV_COORDS_PER_TRI)+5));
+      
+      Triangle triangle(v1, v2, v3, uv1, uv2, uv3);
+      triangles.push_back(triangle);
    }
 }

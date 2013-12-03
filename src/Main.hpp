@@ -8,7 +8,7 @@
 #define MAIN_HPP
 
 #include "OBJReader.hpp"
-#include "Mesh.hpp"
+#include "MeshData.hpp"
 #include "Camera.hpp"
 #include "Raytracer.hpp"
 

@@ -10,11 +10,15 @@ Triangle::Triangle()
 {
 }
 
-Triangle::Triangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
+Triangle::Triangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec2 uv1, glm::vec2 uv2, glm::vec2 uv3)
 {
    this->v1 = v1;
    this->v2 = v2;
    this->v3 = v3;
+   
+   this->uv1 = uv1;
+   this->uv2 = uv2;
+   this->uv3 = uv3;
    
    calculateBoundingBox();
 }

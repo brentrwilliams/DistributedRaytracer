@@ -15,7 +15,7 @@
 #include <sstream>
 #include <vector>
 
-#include "Mesh.hpp"
+#include "MeshData.hpp"
 #include "BoundingBox.hpp"
 #include "Face.hpp"
 
@@ -32,14 +32,14 @@ class OBJReader
       OBJReader(char* objFileName);
       ~OBJReader();
       bool hasNextMesh();
-      Mesh* getMesh();
+      MeshData* getMeshData();
       
    private:
       std::ifstream objFile;
       
       void facesVerticesTexCoordsToTriangles(std::vector<float> vertices, 
        std::vector<Face> faces, std::vector<float> textureCoordinates, 
-       Mesh* meshPtr);
+       MeshData* meshDataPtr);
       BoundingBox getSceneBoundingBox();
       std::string getMtlFileName();
       std::string trim(const std::string& str);
