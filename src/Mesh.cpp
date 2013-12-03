@@ -43,7 +43,7 @@ std::ostream &operator<<(std::ostream &out, Mesh mesh)
    
    out << "\tTexture Coordinates: \n";
    for(i = 0; i < mesh.textureCoordinates->size(); i+=3)
-      out << "\t\t(" << mesh.textureCoordinates->at(i) << ", " << mesh.textureCoordinates->at(i+1) << ", " << mesh.textureCoordinates->at(i+2) << ")\n";
+      out << "\t\t(" << mesh.textureCoordinates->at(i) << ", " << mesh.textureCoordinates->at(i+1) << ")\n";
 
    return out;
 }
