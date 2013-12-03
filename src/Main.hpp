@@ -9,6 +9,8 @@
 
 #include "OBJReader.hpp"
 #include "Mesh.hpp"
+#include "Camera.hpp"
+#include "Raytracer.hpp"
 
 #include <iostream>
 #include <vector> 

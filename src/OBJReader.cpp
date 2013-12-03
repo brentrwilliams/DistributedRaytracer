@@ -39,7 +39,7 @@ bool OBJReader::hasNextMesh()
 }
 
 //If there are more meshes, returns the next mesh
-Mesh OBJReader::getMesh()
+Mesh* OBJReader::getMesh()
 {
    char fileBuffer[BUFFER_SIZE];
    char charBuffer[BUFFER_SIZE];
@@ -48,10 +48,10 @@ Mesh OBJReader::getMesh()
    bool done = false;
    int faceNum;
    std::string stringBuffer;
-   Mesh mesh;
+   Mesh *meshPtr = new Mesh();
    std::vector<float> vertices;
    std::vector<Face> faces;
-   std::vector<TextureCoordinates> textureCoordinates;
+   std::vector<float> textureCoordinates;
    
    //std::cout << "In getMesh()\n";
    
@@ -89,20 +89,14 @@ Mesh OBJReader::getMesh()
       }
       else if (word != NULL && strcmp(word, "vt") == 0)
       {
-         TextureCoordinates texCoords;
-         texCoords.numCoordinates = 0;
-         
          //std::cout << "In vt\n";
          
          word = strtok(NULL, " \t");
          while (word != NULL && strlen(word) > 1)
          {
-            texCoords.coordinates[texCoords.numCoordinates] = atof(word);
-            texCoords.numCoordinates++;
+            textureCoordinates.push_back(atof(word));
             word = strtok(NULL, " \t");
          }
-         
-         textureCoordinates.push_back(texCoords);
       }
       else if (word != NULL && strcmp(word, "f") == 0)
       {
@@ -135,9 +129,9 @@ Mesh OBJReader::getMesh()
          gHit = true;
          word = strtok(NULL, " \t");
          if (word != NULL)
-            mesh.name = word;
+            meshPtr->name->assign(word);
          else
-            mesh.name = "";
+            meshPtr->name->assign("");
          //std::cout << "In g: " << mesh.name << "\n";
       }
       else if (word != NULL && strcmp(word, "usemtl") == 0)
@@ -145,33 +139,137 @@ Mesh OBJReader::getMesh()
          //std::cout << "In usemtl\n";
          word = strtok(NULL, " \t");
          if (word != NULL)
-            mesh.material = word;
+            meshPtr->material->assign(word);
          else
-            mesh.material = "";
+            meshPtr->material->assign("");
       }
       
    }
    
-   int i;
-   std::cout << "Mesh: " << mesh.name << "\n";
-   if (!mesh.material.empty())
-      std::cout << "\tMaterial: " << mesh.material << "\n";
+   /*int i;
+   std::cout << "Mesh: " << *meshPtr->name << "\n";
+   if (!meshPtr->material->empty())
+      std::cout << "\tMaterial: " << *meshPtr->material << "\n";
    
    std::cout << "\tVertices: \n";
    for(i = 0; i < vertices.size(); i+=3)
       std::cout << "\t\t(" << vertices[i] << ", " << vertices[i+1] << ", " << vertices[i+2] << ")\n";
    
    std::cout << "\tTexture Coordinates: \n";
-   for(i = 0; i < textureCoordinates.size(); i++)
-      std::cout << "\t\t" << textureCoordinates[i] << "\n";
+   for(i = 0; i < textureCoordinates.size(); i+=3)
+      std::cout << "\t\t(" << textureCoordinates[i] << ", " << textureCoordinates[i+1] << ", " << textureCoordinates[i+2] << ")\n";
    
    std::cout << "\tFaces: \n";
    for(i = 0; i < faces.size(); i++)
       std::cout << "\t\t" << faces[i] << "\n";
    
    std::cout << "\n";
+   */
+   facesVerticesTexCoordsToTriangles(vertices, faces, textureCoordinates, meshPtr);
    
-   return mesh;
+   return meshPtr;
+}
+
+void OBJReader::facesVerticesTexCoordsToTriangles(std::vector<float> vertices, 
+ std::vector<Face> faces, std::vector<float> textureCoordinates, Mesh* meshPtr)
+{
+   int i, j;
+   
+   //std::cout << "faces.size(): " << faces.size() << "\n";
+   
+   for (i = 0; i < faces.size(); i++)
+   {
+      if (faces[i].numVertices == 3)
+      {
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+2]);
+
+         if (textureCoordinates.size() > 0)
+         {
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+2]);
+         }
+      }
+      else if (faces[i].numVertices == 4)
+      {
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[1]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+2]);
+         
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[0]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[2]-1)*3+2]);
+         
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[3]-1)*3]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[3]-1)*3+1]);
+         meshPtr->triangleVertices->push_back(vertices[(faces[i].vertexNumbers[3]-1)*3+2]);
+         
+         if (textureCoordinates.size() > 0)
+         {
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[1]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[0]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[2]-1)*3+2]);
+            
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[3]-1)*3]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[3]-1)*3+1]);
+            meshPtr->textureCoordinates->push_back(textureCoordinates[(faces[i].vertexNumbers[3]-1)*3+2]);
+         }
+      }
+      else
+      {
+         std::cerr << "Mesh " << *meshPtr->name << "'s face " << i << " has " << faces[i].numVertices;
+         std::cerr << " vertices. Exitting...\n";
+         exit(EXIT_FAILURE);
+      }
+      
+   }
 }
 
 BoundingBox OBJReader::getSceneBoundingBox()

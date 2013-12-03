@@ -18,7 +18,6 @@
 #include "Mesh.hpp"
 #include "BoundingBox.hpp"
 #include "Face.hpp"
-#include "TextureCoordinates.hpp"
 
 #define BUFFER_SIZE 256
 #define STRING_SIZE 256
@@ -33,11 +32,14 @@ class OBJReader
       OBJReader(char* objFileName);
       ~OBJReader();
       bool hasNextMesh();
-      Mesh getMesh();
+      Mesh* getMesh();
       
    private:
       std::ifstream objFile;
       
+      void facesVerticesTexCoordsToTriangles(std::vector<float> vertices, 
+       std::vector<Face> faces, std::vector<float> textureCoordinates, 
+       Mesh* meshPtr);
       BoundingBox getSceneBoundingBox();
       std::string getMtlFileName();
       std::string trim(const std::string& str);
