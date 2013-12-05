@@ -82,11 +82,46 @@ void Mesh::verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices,
       glm::vec3 v2(triangleVertices->at((i*VERTS_PER_TRI)+3), triangleVertices->at((i*VERTS_PER_TRI)+4), triangleVertices->at((i*VERTS_PER_TRI)+5));
       glm::vec3 v3(triangleVertices->at((i*VERTS_PER_TRI)+6), triangleVertices->at((i*VERTS_PER_TRI)+7), triangleVertices->at((i*VERTS_PER_TRI)+8)); 
       
-      glm::vec2 uv1(textureCoordinates->at((i*UV_COORDS_PER_TRI)), textureCoordinates->at((i*UV_COORDS_PER_TRI)+1));
-      glm::vec2 uv2(textureCoordinates->at((i*UV_COORDS_PER_TRI)+2), textureCoordinates->at((i*UV_COORDS_PER_TRI)+3));
-      glm::vec2 uv3(textureCoordinates->at((i*UV_COORDS_PER_TRI)+4), textureCoordinates->at((i*UV_COORDS_PER_TRI)+5));
+      glm::vec2 uv1(0.0f,0.0f);
+      glm::vec2 uv2(0.0f,0.0f);
+      glm::vec2 uv3(0.0f,0.0f);
+      if (textureCoordinates->size() > 0)
+      {
+         uv1.x = textureCoordinates->at((i*UV_COORDS_PER_TRI));
+         uv1.y = textureCoordinates->at((i*UV_COORDS_PER_TRI)+1);
+         
+         uv2.x = textureCoordinates->at((i*UV_COORDS_PER_TRI)+2);
+         uv2.x = textureCoordinates->at((i*UV_COORDS_PER_TRI)+3);
+         
+         uv3.x = textureCoordinates->at((i*UV_COORDS_PER_TRI)+4);
+         uv3.y = textureCoordinates->at((i*UV_COORDS_PER_TRI)+5);
+      }
       
       Triangle triangle(v1, v2, v3, uv1, uv2, uv3);
       triangles.push_back(triangle);
    }
+}
+
+std::vector<glm::vec3> Mesh::getEmissiveSamples()
+{
+   std::vector<glm::vec3> samples;
+   int i;
+   unsigned int seed = 1;
+   
+   srand(seed);
+   
+   for (i = 0; i < NUM_LIGHT_SAMPLES; i++)
+   {
+      //Get a random triangles from the mesh
+      int triIndex = rand() % triangles.size();
+      Triangle triangle = triangles[triIndex];
+      
+      //Get a random point within the triangle
+      float r1 = (rand()%100) / 100.0f;
+      float r2 = (rand()%100) / 100.0f;
+      glm::vec3 samplePoint = (triangle.v1 * ((float)(1 - sqrt(r1)))) + (triangle.v2 * ((float)(sqrt(r1) * (1 - r2)))) + (triangle.v3 * ((float)((sqrt(r1) * r2))));
+      samples.push_back(samplePoint);
+   }
+
+   return samples;
 }

@@ -10,13 +10,19 @@
 #include <vector>
 #include <string>
 #include <ostream>
+#include <stdlib.h>
+#include <math.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "BoundingBox.hpp"
 #include "Triangle.hpp"
 #include "MeshData.hpp"
 
 #define VERTS_PER_TRI 9
 #define UV_COORDS_PER_TRI 6
+#define NUM_LIGHT_SAMPLES 4
 
 class Mesh
 {
@@ -32,6 +38,7 @@ class Mesh
       ~Mesh();
       void calculateBoundingBox();
       void verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates);
+      std::vector<glm::vec3> getEmissiveSamples();
       
    private:
       friend std::ostream &operator<<(std::ostream &out, Mesh mesh);

@@ -10,14 +10,21 @@ Raytracer::Raytracer(int imageWidth, int imageHeight, char* objFileName, char* c
 {
    this->imageWidth = imageWidth;
    this->imageHeight = imageHeight; 
-   objReader  = new OBJReader(objFileName);
+   objReader = new OBJReader(objFileName);
    camera = new Camera(cameraFileName);
+   MTLReader mtlReader(objReader->mtlFileName.c_str());
+   materials = mtlReader.getMaterials();
    
    image.allocateImage(imageWidth, imageHeight);
    zBuffer = (float **) malloc(imageWidth*sizeof(float*));
    int i;
    for (i = 0; i < imageWidth; i++)
       zBuffer[i] = (float *) malloc(imageHeight*sizeof(float));
+      
+   for( std::map<std::string, Material>::iterator matIt=materials.begin(); matIt!=materials.end(); ++matIt)
+   {
+       std::cout << (*matIt).second << endl;
+   }
 }
 
 Raytracer::~Raytracer()
@@ -28,6 +35,8 @@ Raytracer::~Raytracer()
 
 void Raytracer::trace()
 {
+   int i, j;
+   
    // Get all the meshes
    MeshData* tempMeshData;
    Mesh* tempMesh;
@@ -40,10 +49,28 @@ void Raytracer::trace()
       meshes.push_back(tempMesh);
    }
    
+   vector<glm::vec3> samples = meshes[1]->getEmissiveSamples();
+   for (i = 0; i < samples.size(); i++)
+   {
+      std::cout << "<" << samples[i].x << ", " << samples[i].y << ", " << samples[i].z << ">\n"; 
+   }
+   
    std::cout << "Num meshes: " << meshes.size() << "\n";
    
+   //Find all emissive meshes
+   for (i = 0; i < meshes.size(); i++)
+   {
+      Material currMaterial = materials[meshes[i]->material];
+      if (currMaterial.isEmissive())
+         emissiveMeshes.push_back(meshes[i]);
+   }
+   std::cout << "Emissive meshes:\n";
+   for (i = 0; i < emissiveMeshes.size(); i++)
+   {
+      std::cout << *emissiveMeshes[i] << "\n";
+   }
    //Calculate rays
-   int i, j;
+   
    Ray ray;
    RayCalcInfo rayCalcInfo;
    
@@ -114,9 +141,10 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
 {
    bool intersected;
    float t;
+   Triangle* triangleHit;
    vec3 color(0.0f, 0.0f, 0.0f);
    
-   intersected = intersectGeometry(ray, &t);
+   intersected = intersectGeometry(ray, &t, triangleHit);
    
    if (intersected && t < (*zValue)) 
    {
@@ -128,7 +156,7 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    return color;
 }
 
-bool Raytracer::intersectGeometry(Ray ray, float *t)
+bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit)
 {
    int i, j;
    float currT;
@@ -147,10 +175,15 @@ bool Raytracer::intersectGeometry(Ray ray, float *t)
                hit = true;
                
                if (currT < (*t))
+               {
                   *t = currT;
+                  *triangleHit = currMesh->triangles[j];
+               }
+               
             }
          }
       }
    }
    return hit;
 }
+
