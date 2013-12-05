@@ -21,6 +21,7 @@
 #include "Image.hpp"
 #include "Material.hpp"
 #include "MTLReader.hpp"
+#include "Utilities.hpp"
 
 #define MAX_FLOAT 1000000.0
 
@@ -37,7 +38,7 @@ class Raytracer
       int imageHeight;
       OBJReader* objReader; 
       Camera* camera;
-      std::vector<Mesh*> meshes;
+      std::vector<Mesh> meshes;
       std::vector<Mesh*> emissiveMeshes;
       std::map<std::string, Material> materials;
       Image image;
@@ -45,7 +46,8 @@ class Raytracer
       
       glm::vec3 calculatePixelColor(RayCalcInfo rayCalcInfo, int i, int j);
       glm::vec3 traceRay(Ray &ray, float *zValue);
-      bool intersectGeometry(Ray ray, float *t, Triangle* triangleHit);
+      bool intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex);
+      glm::vec3 calculateHitColor(Ray ray, float t, Triangle triangleHit, int meshIndex);
 };
 
 #endif

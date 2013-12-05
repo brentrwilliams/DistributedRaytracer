@@ -44,12 +44,12 @@ void Raytracer::trace()
    while (objReader->hasNextMesh())
    {
       tempMeshData = objReader->getMeshData();
-      tempMesh = new Mesh(*tempMeshData);
-      std::cout << "\n" << *tempMesh  << "\n";
+      Mesh tempMesh(*tempMeshData);
+      std::cout << "\n" << tempMesh  << "\n";
       meshes.push_back(tempMesh);
    }
    
-   vector<glm::vec3> samples = meshes[1]->getEmissiveSamples();
+   vector<glm::vec3> samples = meshes[1].getEmissiveSamples();
    for (i = 0; i < samples.size(); i++)
    {
       std::cout << "<" << samples[i].x << ", " << samples[i].y << ", " << samples[i].z << ">\n"; 
@@ -60,9 +60,9 @@ void Raytracer::trace()
    //Find all emissive meshes
    for (i = 0; i < meshes.size(); i++)
    {
-      Material currMaterial = materials[meshes[i]->material];
+      Material currMaterial = materials[meshes[i].material];
       if (currMaterial.isEmissive())
-         emissiveMeshes.push_back(meshes[i]);
+         emissiveMeshes.push_back(&meshes[i]);
    }
    std::cout << "Emissive meshes:\n";
    for (i = 0; i < emissiveMeshes.size(); i++)
@@ -140,44 +140,44 @@ void Raytracer::saveImage(char *imageName)
 glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
 {
    bool intersected;
-   float t;
-   Triangle* triangleHit;
+   float t = MAX_FLOAT;
+   int meshIndex;
+   Triangle triangleHit;
    vec3 color(0.0f, 0.0f, 0.0f);
    
-   intersected = intersectGeometry(ray, &t, triangleHit);
+   intersected = intersectGeometry(ray, &t, &triangleHit, &meshIndex);
    
    if (intersected && t < (*zValue)) 
    {
-      color.x = 1.0;
-      color.y = 1.0;
-      color.z = 1.0;
+      color = calculateHitColor(ray, t, triangleHit, meshIndex);
    }
    
    return color;
 }
 
-bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit)
+bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex)
 {
    int i, j;
    float currT;
-   Mesh* currMesh;
+   Mesh currMesh;
    bool hit = false;
    for (i = 0; i < meshes.size(); i++)
    {
       currMesh = meshes[i];
       
-      if (currMesh->boundingBox.intersect(ray))
+      if (currMesh.boundingBox.intersect(ray))
       {
-         for (j = 0; j < currMesh->triangles.size(); j++)
+         for (j = 0; j < currMesh.triangles.size(); j++)
          {
-            if(currMesh->triangles[j].intersect(ray, &currT))
+            if(currMesh.triangles[j].intersect(ray, &currT))
             {
                hit = true;
                
                if (currT < (*t))
                {
                   *t = currT;
-                  *triangleHit = currMesh->triangles[j];
+                  *triangleHit = currMesh.triangles[j];
+                  *meshIndex = i;
                }
                
             }
@@ -186,4 +186,103 @@ bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit)
    }
    return hit;
 }
+
+//Currently only doing illum 2
+glm::vec3 Raytracer::calculateHitColor(Ray ray, float t, Triangle triangleHit, int meshIndex)
+{
+   glm::vec3 color(0.0f, 0.0f, 0.0f);
+   float ia = 0.0;
+   
+   Material material = materials[meshes[meshIndex].material];
+   color = material.kd;
+   glm::vec3 ambient(0.0f, 0.0f, 0.0f);
+   glm::vec3 diffuse(0.0f, 0.0f, 0.0f);
+   glm::vec3 specular(0.0f, 0.0f, 0.0f);
+   //std::cout << "mesh index: " << meshIndex << "\n";
+   
+   
+   glm::vec3 p = ray.p + (t * ray.d);
+   vec3 normal = triangleHit.getNormal(p);
+   
+   glm::vec3 v = ray.d * (-1.0f);
+   v = v / glm::length(v);
+   
+   ambient = material.ka * ia;
+   
+   int i, j;
+   /*
+   glm::vec3 lightPos(-100, 100, 100);
+   glm::vec3 lightColor(1.5, 1.5, 1.5);
+   glm::vec3 l = (lightPos) - p;
+   l = l / glm::length(l);
+   
+   std::cout << "n dot l: " << (fclamp(0.0f, 1.0f, glm::dot(normal,l))) << "\n";
+   std::cout << "normal: <" << normal.x << ", " << normal.y << ", " << normal.z << ">\n";
+   std::cout << "l: <" << l.x << ", " << l.y << ", " << l.z << ">\n\n";
+   
+   diffuse.x = material.kd.x * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightColor.x;
+   diffuse.y = material.kd.y * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightColor.y;
+   diffuse.z = material.kd.z * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightColor.z;
+   */
+   
+   for (i = 0; i < emissiveMeshes.size(); i++)
+   {
+      Material lightMaterial = materials[emissiveMeshes[i]->material];
+      vector<glm::vec3> samples = emissiveMeshes[i]->getEmissiveSamples();
+      float lightPortion = 1.0f / samples.size();
+      for (i = 0; i < samples.size(); i++)
+      {
+         glm::vec3 l = (samples[i]) - p;
+         l = l / glm::length(l);
+         
+         std::cout << "n dot l: " << (fclamp(0.0f, 1.0f, glm::dot(normal,l))) << "\n";
+         std::cout << "normal: <" << normal.x << ", " << normal.y << ", " << normal.z << ">\n";
+         std::cout << "l: <" << l.x << ", " << l.y << ", " << l.z << ">\n\n";
+         
+         diffuse.x += lightPortion * material.kd.x * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightMaterial.ke.x;
+         diffuse.y += lightPortion * material.kd.y * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightMaterial.ke.y;
+         diffuse.z += lightPortion * material.kd.z * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightMaterial.ke.z;
+         
+         //specular 
+      }
+   }
+   
+   color = ambient + diffuse + specular;
+   
+   return color;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
