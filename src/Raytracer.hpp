@@ -22,6 +22,7 @@
 #include "Material.hpp"
 #include "MTLReader.hpp"
 #include "Utilities.hpp"
+#include "MeshBVH.hpp"
 
 #define MAX_FLOAT 1000000.0
 

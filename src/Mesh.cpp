@@ -16,6 +16,7 @@ Mesh::Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoor
    this->material = material;
    verticesAndTexCoordsToTriangles(triangleVertices, textureCoordinates);
    calculateBoundingBox();
+   bvh = new MeshBVH(triangles);
 }
 
 Mesh::Mesh(MeshData meshData)
@@ -24,6 +25,7 @@ Mesh::Mesh(MeshData meshData)
    this->material = *meshData.material;
    verticesAndTexCoordsToTriangles(meshData.triangleVertices, meshData.textureCoordinates);
    calculateBoundingBox();
+   bvh = new MeshBVH(triangles);
 }
 
 Mesh::~Mesh()
@@ -98,6 +100,7 @@ void Mesh::verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices,
       }
       
       Triangle triangle(v1, v2, v3, uv1, uv2, uv3);
+      triangle.calculateBoundingBox();
       triangles.push_back(triangle);
    }
 }
@@ -124,4 +127,9 @@ std::vector<glm::vec3> Mesh::getEmissiveSamples()
    }
 
    return samples;
+}
+
+bool Mesh::intersect(Ray ray, float *t, Triangle* triangleHit)
+{
+   return bvh->intersect(ray, t, triangleHit);
 }

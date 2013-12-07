@@ -8,10 +8,12 @@
 
 Triangle::Triangle()
 {
+   type = TRIANGLE_TYPE;
 }
 
 Triangle::Triangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec2 uv1, glm::vec2 uv2, glm::vec2 uv3)
 {
+   type = TRIANGLE_TYPE;
    this->v1 = v1;
    this->v2 = v2;
    this->v3 = v3;
@@ -31,6 +33,7 @@ std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
    os << "uv1: " << "< " << triangle.uv1.x << " " << triangle.uv1.y << " >\n";
    os << "uv2: " << "< " << triangle.uv2.x << " " << triangle.uv2.y << " >\n";
    os << "uv3: " << "< " << triangle.uv3.x << " " << triangle.uv3.y << " >\n";
+   os << "bounding box: " << triangle.boundingBox << "\n";
    
    return os;
 }
@@ -164,4 +167,18 @@ glm::vec2 Triangle::getUV(glm::vec3 pt)
    uv.y = uv1.y + beta*(uv3.y-uv1.y) + gamma*(uv2.y-uv1.y);
    
    return uv;
+}
+
+//Returns true if greater than
+bool xAxisSort(Triangle tri1, Triangle tri2)
+{
+   return tri1.boundingBox.mins.x < tri2.boundingBox.mins.x;
+}
+bool yAxisSort(Triangle tri1, Triangle tri2)
+{
+   return tri1.boundingBox.mins.y < tri2.boundingBox.mins.y;
+}
+bool zAxisSort(Triangle tri1, Triangle tri2)
+{
+   return tri1.boundingBox.mins.z < tri2.boundingBox.mins.z;
 }

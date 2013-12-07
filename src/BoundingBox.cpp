@@ -8,10 +8,12 @@
 
 BoundingBox::BoundingBox()
 {
+   type = BOUNDING_BOX_TYPE;
 }
 
 BoundingBox::BoundingBox(glm::vec3 mins, glm::vec3 maxs)
 {
+   type = BOUNDING_BOX_TYPE;
    this->mins = mins;
    this->maxs = maxs;
    calculateCorners();
@@ -20,6 +22,7 @@ BoundingBox::BoundingBox(glm::vec3 mins, glm::vec3 maxs)
 
 BoundingBox::BoundingBox(BoundingBox bb1, BoundingBox bb2)
 {
+   type = BOUNDING_BOX_TYPE;
    mins.x = bb1.mins.x;
    mins.y = bb1.mins.y;
    mins.z = bb1.mins.z;

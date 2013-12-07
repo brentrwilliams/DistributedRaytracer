@@ -19,6 +19,8 @@
 #include "BoundingBox.hpp"
 #include "Triangle.hpp"
 #include "MeshData.hpp"
+#include "MeshBVH.hpp"
+#include "Ray.hpp"
 
 #define VERTS_PER_TRI 9
 #define UV_COORDS_PER_TRI 6
@@ -31,6 +33,7 @@ class Mesh
       std::string material;
       std::vector<Triangle> triangles;
       BoundingBox boundingBox;
+      MeshBVH* bvh;
       
       Mesh();
       Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates, char* name, char* material);
@@ -39,6 +42,7 @@ class Mesh
       void calculateBoundingBox();
       void verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates);
       std::vector<glm::vec3> getEmissiveSamples();
+      bool intersect(Ray ray, float *t, Triangle* triangleHit);
       
    private:
       friend std::ostream &operator<<(std::ostream &out, Mesh mesh);

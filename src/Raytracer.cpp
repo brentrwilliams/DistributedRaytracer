@@ -154,7 +154,7 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    
    return color;
 }
-
+/*
 bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex)
 {
    int i, j;
@@ -186,6 +186,28 @@ bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int*
    }
    return hit;
 }
+*/
+
+bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex)
+{
+   int i, j;
+   float currT;
+   Mesh currMesh;
+   bool hit = false;
+   for (i = 0; i < meshes.size(); i++)
+   {
+      currMesh = meshes[i];
+      
+      if (currMesh.boundingBox.intersect(ray))
+      {
+         hit = currMesh.intersect(ray, t, triangleHit);
+         *meshIndex = i; 
+      }
+   }
+   return hit;
+}
+
+
 
 //Currently only doing illum 2
 glm::vec3 Raytracer::calculateHitColor(Ray ray, float t, Triangle triangleHit, int meshIndex)

@@ -15,12 +15,13 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "Ray.hpp"
+#include "RaytracerObject.hpp"
 
 #define MAX_CHARS_PER_LINE 512
 #define MAXIMUM_FLOAT 1000000000
 #define MINIMUM_FLOAT -1000000000
 
-class BoundingBox
+class BoundingBox : public RaytracerObject
 {
    public:
       glm::vec3 mins;
