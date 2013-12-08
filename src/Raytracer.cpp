@@ -25,6 +25,8 @@ Raytracer::Raytracer(int imageWidth, int imageHeight, char* objFileName, char* c
    {
        std::cout << (*matIt).second << endl;
    }
+   
+   antiAliasing = true;
 }
 
 Raytracer::~Raytracer()
@@ -100,7 +102,10 @@ void Raytracer::trace()
          rayCalcInfo.i = i;
          rayCalcInfo.j = j;
          
-         color = calculatePixelColor(rayCalcInfo, i, j);
+         //if (!antiAliasing)
+         //   color = calculatePixelColor(rayCalcInfo, i, j);
+         //else
+            color = calculateAAPixelColor(rayCalcInfo, i, j);
          
          image.r[i][j] = color.x;
          image.g[i][j] = color.y;
@@ -112,7 +117,7 @@ void Raytracer::trace()
          if ( ((pixel * 100) / numPixels) > percent)
          {
             percent++;
-            cerr << percent << "%% complete\n";
+            cerr << percent << "% complete\n";
          }
          pixel++;
       }
@@ -125,10 +130,37 @@ glm::vec3 Raytracer::calculatePixelColor(RayCalcInfo rayCalcInfo, int i, int j)
    vec3 color(0,0,0);
    int x, y;
    float z = MAX_FLOAT;
-   ray.calculateRay(rayCalcInfo, 1, 1); 
+   ray.calculateRay(rayCalcInfo, 1, 1);
    color = traceRay(ray, &z);
    
    zBuffer[i][j] = z;
+   return color;
+}
+
+glm::vec3 Raytracer::calculateAAPixelColor(RayCalcInfo rayCalcInfo, int i, int j)
+{
+   Ray ray;
+   vec3 color;
+   int x, y;
+   float z, minZ =  MAX_FLOAT;
+   bool printVec;
+   
+   
+   for (x = 0; x < 3; x++)
+   {
+      for (y = 0; y < 3; y++)
+      {
+         z = MAX_FLOAT;
+         ray.calculateRay(rayCalcInfo, x, y); 
+         color += traceRay(ray, &(z));
+         
+         if (z < minZ)
+            minZ = z;
+      }
+   }
+   
+   color /= 9.0f;
+   zBuffer[i][j] = minZ;
    return color;
 }
 
@@ -146,6 +178,9 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    vec3 color(0.0f, 0.0f, 0.0f);
    
    intersected = intersectGeometry(ray, &t, &triangleHit, &meshIndex);
+   if (intersected)
+      std::cout << "Hit: t = " << t << " zValue = " << *zValue << "\n";
+   
    
    if (intersected && t < (*zValue)) 
    {
@@ -202,6 +237,7 @@ bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int*
       {
          hit = currMesh.intersect(ray, t, triangleHit);
          *meshIndex = i; 
+         //std::cout << "HIT in geo inter!\n";
       }
    }
    return hit;
@@ -270,6 +306,8 @@ glm::vec3 Raytracer::calculateHitColor(Ray ray, float t, Triangle triangleHit, i
    }
    
    color = ambient + diffuse + specular;
+   
+   std::cout << "color: <" << color.x << ", " << color.y << ", " << color.z << ">\n";
    
    return color;
 }

@@ -44,8 +44,10 @@ class Raytracer
       std::map<std::string, Material> materials;
       Image image;
       float **zBuffer;
+      bool antiAliasing;
       
       glm::vec3 calculatePixelColor(RayCalcInfo rayCalcInfo, int i, int j);
+      glm::vec3 calculateAAPixelColor(RayCalcInfo rayCalcInfo, int i, int j);
       glm::vec3 traceRay(Ray &ray, float *zValue);
       bool intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex);
       glm::vec3 calculateHitColor(Ray ray, float t, Triangle triangleHit, int meshIndex);
