@@ -21,6 +21,7 @@
 #include "MeshData.hpp"
 #include "MeshBVH.hpp"
 #include "Ray.hpp"
+#include "Utilities.hpp"
 
 #define VERTS_PER_TRI 9
 #define UV_COORDS_PER_TRI 6
@@ -40,6 +41,8 @@ class Mesh
       Mesh(MeshData meshData);
       ~Mesh();
       void calculateBoundingBox();
+      void calculateVertexNormals();
+      void calculateFaceNormals();
       void verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates);
       std::vector<glm::vec3> getEmissiveSamples();
       bool intersect(Ray ray, float *t, Triangle* triangleHit);

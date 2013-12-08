@@ -85,14 +85,21 @@ bool Triangle::intersect(Ray ray, float *t)
    return true;
 }
 
-glm::vec3 Triangle::getNormal(glm::vec3 pt)
+void Triangle::calculateFaceNormal()
 {
    glm::vec3 b1 = v1 - v2;
    glm::vec3 b2 = v2 - v3;
    glm::vec3 normal = glm::cross(b1, b2);
    
-   normal = normal / glm::length(normal);
-   
+   faceNormal = normal / glm::length(normal);
+}
+
+glm::vec3 Triangle::getNormal(glm::vec3 pt)
+{
+   float alpha, beta, gamma;
+   glm::vec3 normal;
+   calculateBarycentricCoordinates(&alpha, &beta, &gamma, pt);
+   normal = normal1 * alpha + normal2 * beta + normal3 * gamma;
    return normal;
 }
 
@@ -167,6 +174,20 @@ glm::vec2 Triangle::getUV(glm::vec3 pt)
    uv.y = uv1.y + beta*(uv3.y-uv1.y) + gamma*(uv2.y-uv1.y);
    
    return uv;
+}
+
+void Triangle::calculateBarycentricCoordinates(float *alpha, float* beta, float* gamma, glm::vec3 p)
+{
+   glm::vec3 newV0 = v2 - v1, newV1 = v3 - v1, newV2 = p - v1;
+   float d00 = glm::dot(newV0, newV0);
+   float d01 = glm::dot(newV0, newV1);
+   float d11 = glm::dot(newV1, newV1);
+   float d20 = glm::dot(newV2, newV0);
+   float d21 = glm::dot(newV2, newV1);
+   float denom = d00 * d11 - d01 * d01;
+   *beta = (d11 * d20 - d01 * d21) / denom;
+   *gamma = (d00 * d21 - d01 * d20) / denom;
+   *alpha = 1.0f - *beta - *gamma;
 }
 
 //Returns true if greater than

@@ -23,6 +23,11 @@ class Triangle : public RaytracerObject
       glm::vec3 v2;
       glm::vec3 v3;
       
+      glm::vec3 faceNormal;
+      glm::vec3 normal1;
+      glm::vec3 normal2;
+      glm::vec3 normal3;
+      
       glm::vec2 uv1;
       glm::vec2 uv2;
       glm::vec2 uv3;
@@ -34,8 +39,10 @@ class Triangle : public RaytracerObject
       friend std::ostream& operator<<(std::ostream& os, const Triangle& triangle);
       bool intersect(Ray ray, float *t);
       glm::vec3 getNormal(glm::vec3 pt);
+      void calculateFaceNormal();
       void calculateBoundingBox();
       glm::vec2 getUV(glm::vec3 pt);
+      void calculateBarycentricCoordinates(float *alpha, float* beta, float* gamma, glm::vec3 p);
 
 };
 

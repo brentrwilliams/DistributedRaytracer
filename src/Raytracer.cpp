@@ -23,7 +23,7 @@ Raytracer::Raytracer(int imageWidth, int imageHeight, char* objFileName, char* c
       
    for( std::map<std::string, Material>::iterator matIt=materials.begin(); matIt!=materials.end(); ++matIt)
    {
-       std::cout << (*matIt).second << endl;
+       //std::cout << (*matIt).second << endl;
    }
    
    antiAliasing = true;
@@ -47,17 +47,17 @@ void Raytracer::trace()
    {
       tempMeshData = objReader->getMeshData();
       Mesh tempMesh(*tempMeshData);
-      std::cout << "\n" << tempMesh  << "\n";
+      //std::cout << "\n" << tempMesh  << "\n";
       meshes.push_back(tempMesh);
    }
    
    vector<glm::vec3> samples = meshes[1].getEmissiveSamples();
    for (i = 0; i < samples.size(); i++)
    {
-      std::cout << "<" << samples[i].x << ", " << samples[i].y << ", " << samples[i].z << ">\n"; 
+     // std::cout << "<" << samples[i].x << ", " << samples[i].y << ", " << samples[i].z << ">\n"; 
    }
    
-   std::cout << "Num meshes: " << meshes.size() << "\n";
+   //std::cout << "Num meshes: " << meshes.size() << "\n";
    
    //Find all emissive meshes
    for (i = 0; i < meshes.size(); i++)
@@ -66,10 +66,10 @@ void Raytracer::trace()
       if (currMaterial.isEmissive())
          emissiveMeshes.push_back(&meshes[i]);
    }
-   std::cout << "Emissive meshes:\n";
+   //std::cout << "Emissive meshes:\n";
    for (i = 0; i < emissiveMeshes.size(); i++)
    {
-      std::cout << *emissiveMeshes[i] << "\n";
+      //std::cout << *emissiveMeshes[i] << "\n";
    }
    //Calculate rays
    
@@ -178,8 +178,8 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    vec3 color(0.0f, 0.0f, 0.0f);
    
    intersected = intersectGeometry(ray, &t, &triangleHit, &meshIndex);
-   if (intersected)
-      std::cout << "Hit: t = " << t << " zValue = " << *zValue << "\n";
+   //if (intersected)
+   //   std::cout << "Hit: t = " << t << " zValue = " << *zValue << "\n";
    
    
    if (intersected && t < (*zValue)) 
@@ -189,39 +189,7 @@ glm::vec3 Raytracer::traceRay(Ray &ray, float *zValue)
    
    return color;
 }
-/*
-bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex)
-{
-   int i, j;
-   float currT;
-   Mesh currMesh;
-   bool hit = false;
-   for (i = 0; i < meshes.size(); i++)
-   {
-      currMesh = meshes[i];
-      
-      if (currMesh.boundingBox.intersect(ray))
-      {
-         for (j = 0; j < currMesh.triangles.size(); j++)
-         {
-            if(currMesh.triangles[j].intersect(ray, &currT))
-            {
-               hit = true;
-               
-               if (currT < (*t))
-               {
-                  *t = currT;
-                  *triangleHit = currMesh.triangles[j];
-                  *meshIndex = i;
-               }
-               
-            }
-         }
-      }
-   }
-   return hit;
-}
-*/
+
 
 bool Raytracer::intersectGeometry(Ray ray, float *t, Triangle* triangleHit, int* meshIndex)
 {
@@ -293,9 +261,9 @@ glm::vec3 Raytracer::calculateHitColor(Ray ray, float t, Triangle triangleHit, i
          glm::vec3 l = (samples[i]) - p;
          l = l / glm::length(l);
          
-         std::cout << "n dot l: " << (fclamp(0.0f, 1.0f, glm::dot(normal,l))) << "\n";
-         std::cout << "normal: <" << normal.x << ", " << normal.y << ", " << normal.z << ">\n";
-         std::cout << "l: <" << l.x << ", " << l.y << ", " << l.z << ">\n\n";
+         //std::cout << "n dot l: " << (fclamp(0.0f, 1.0f, glm::dot(normal,l))) << "\n";
+         //std::cout << "normal: <" << normal.x << ", " << normal.y << ", " << normal.z << ">\n";
+         //std::cout << "l: <" << l.x << ", " << l.y << ", " << l.z << ">\n\n";
          
          diffuse.x += lightPortion * material.kd.x * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightMaterial.ke.x;
          diffuse.y += lightPortion * material.kd.y * (fclamp(0.0f, 1.0f, glm::dot(normal,l))) * lightMaterial.ke.y;
@@ -307,7 +275,7 @@ glm::vec3 Raytracer::calculateHitColor(Ray ray, float t, Triangle triangleHit, i
    
    color = ambient + diffuse + specular;
    
-   std::cout << "color: <" << color.x << ", " << color.y << ", " << color.z << ">\n";
+   //std::cout << "color: <" << color.x << ", " << color.y << ", " << color.z << ">\n";
    
    return color;
 }

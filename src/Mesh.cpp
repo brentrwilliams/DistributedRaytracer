@@ -16,6 +16,8 @@ Mesh::Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoor
    this->material = material;
    verticesAndTexCoordsToTriangles(triangleVertices, textureCoordinates);
    calculateBoundingBox();
+   calculateFaceNormals();
+   calculateVertexNormals();
    bvh = new MeshBVH(triangles);
 }
 
@@ -25,6 +27,8 @@ Mesh::Mesh(MeshData meshData)
    this->material = *meshData.material;
    verticesAndTexCoordsToTriangles(meshData.triangleVertices, meshData.textureCoordinates);
    calculateBoundingBox();
+   calculateFaceNormals();
+   calculateVertexNormals();
    bvh = new MeshBVH(triangles);
 }
 
@@ -71,6 +75,115 @@ void Mesh::calculateBoundingBox()
       if (currMins.z < boundingBox.mins.z)
          boundingBox.mins.z = currMins.z;
    }
+}
+
+void Mesh::calculateFaceNormals()
+{
+   int i;
+   for (i = 0; i < triangles.size(); i++)
+      triangles[i].calculateFaceNormal();
+}
+
+void Mesh::calculateVertexNormals()
+{
+   int numVertices = 3 * triangles.size();
+   int i, j;
+   float tolerance = 0.0001f;
+   int* nCounts = new int[numVertices];
+   
+   for (i = 0; i < numVertices; i++)
+      nCounts[i] = 0;
+   
+   for (i = 0; i < triangles.size(); i++)
+   {
+      triangles[i].normal1 = glm::vec3(0.0f,0.0f,0.0f);
+      triangles[i].normal2 = glm::vec3(0.0f,0.0f,0.0f);
+      triangles[i].normal3 = glm::vec3(0.0f,0.0f,0.0f);
+   }
+  
+   for (i = 0; i < triangles.size(); i++)
+   {
+      for (j = 0; j < triangles.size(); j++)
+      {
+         Triangle& tri1 = triangles[i]; 
+         Triangle& tri2 = triangles[j];
+         
+         if (vec3Equal(tri1.v1, tri2.v1, tolerance))
+         {
+            tri1.normal1 = tri1.normal1 + tri2.faceNormal;
+            nCounts[i]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v1, tri2.v2, tolerance))
+         {
+            tri1.normal1 += tri2.faceNormal;
+            nCounts[i]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v1, tri2.v3, tolerance))
+         {
+            tri1.normal1 = tri1.normal1 + tri2.faceNormal;
+            nCounts[i]++;
+            //std::cout << "IN\n";
+         }
+         
+         if (vec3Equal(tri1.v2, tri2.v1, tolerance))
+         {
+            tri1.normal2 = tri1.normal2 + tri2.faceNormal;
+            nCounts[i+1]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v2, tri2.v2, tolerance))
+         {
+            tri1.normal2 = tri1.normal2 + tri2.faceNormal;
+            nCounts[i+1]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v2, tri2.v3, tolerance))
+         {
+            tri1.normal2 = tri1.normal2 + tri2.faceNormal;
+            nCounts[i+1]++;
+            //std::cout << "IN\n";
+         }
+         
+         if (vec3Equal(tri1.v3, tri2.v1, tolerance))
+         {
+            tri1.normal3 = tri1.normal3 + tri2.faceNormal;
+            nCounts[i+2]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v3, tri2.v2, tolerance))
+         {
+            tri1.normal3 = tri1.normal3 + tri2.faceNormal;
+            nCounts[i+2]++;
+            //std::cout << "IN\n";
+         }
+         else if (vec3Equal(tri1.v3, tri2.v3, tolerance))
+         {
+            tri1.normal3 = tri1.normal3 + tri2.faceNormal;
+            nCounts[i+2]++;
+            //std::cout << "IN\n";
+         }
+      }
+   }
+   
+   for (i = 0; i < triangles.size(); i++)
+   {
+      triangles[i].normal1 /= (float) nCounts[i];
+      triangles[i].normal2 /= (float) nCounts[i+1];
+      triangles[i].normal3 /= (float) nCounts[i+2];
+      
+      //std::cout << "nCounts1 = " << nCounts[i] << "\n";
+      //std::cout << "nCounts2 = " << nCounts[i+1] << "\n";
+      //std::cout << "nCounts3 = " << nCounts[i+2] << "\n";
+      
+      //std::cout << "faceNormal1: " << "< " << triangles[i].faceNormal.x << " " << triangles[i].faceNormal.y << " " << triangles[i].faceNormal.z << " >\n";
+      //std::cout << "normal1: " << "< " << triangles[i].normal1.x << " " << triangles[i].normal1.y << " " << triangles[i].normal1.z << " >\n";
+      //std::cout << "normal2: " << "< " << triangles[i].normal2.x << " " << triangles[i].normal2.y << " " << triangles[i].normal2.z << " >\n";
+      //std::cout << "normal3: " << "< " << triangles[i].normal3.x << " " << triangles[i].normal3.y << " " << triangles[i].normal3.z << " >\n\n";
+   }
+   
+   delete[] nCounts;
 }
 
 void Mesh::verticesAndTexCoordsToTriangles(std::vector<float>* triangleVertices, std::vector<float>* textureCoordinates)
