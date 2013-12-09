@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <sstream>
 #include <vector>
+#include <unistd.h>
 
 #include "MeshData.hpp"
 #include "BoundingBox.hpp"

@@ -12,7 +12,7 @@ MTLReader::MTLReader(const char* fileName)
    mtlFile.open(fileName, std::ifstream::in);
    if (!mtlFile.good())
    {
-      std::cerr << "Unable to open file " << fileName << "\n";
+      std::cerr << "Oh no!!! Unable to open file '" << fileName << "'\n";
       exit (EXIT_FAILURE);
    }
    read();

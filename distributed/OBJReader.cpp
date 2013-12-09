@@ -16,16 +16,21 @@
 OBJReader::OBJReader(char* objFileName)
 {
    this->objFileName = objFileName;
+   std::cout << "=> " << objFileName << "\n";
+   char cwd[1024];
+   getcwd(cwd, sizeof(cwd));
+   std::cout << "cwd: " << cwd << "\n";
    
    objFile.open(objFileName, std::ifstream::in);
    if (!objFile.good())
    {
-      std::cerr << "Unable to open file " << objFileName << "\n";
+      std::cerr << "Woops... Unable to open file #" << objFileName << "#\n";
       exit (EXIT_FAILURE);
    }
    
    sceneBoundingBox = getSceneBoundingBox();
    mtlFileName = getMtlFileName();
+   std::cout << "mtlFileName: " << mtlFileName << "\n";
 }
 
 OBJReader::~OBJReader()

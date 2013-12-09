@@ -9,7 +9,8 @@
 Raytracer::Raytracer(int imageWidth, int imageHeight, char* objFileName, char* cameraFileName)
 {
    this->imageWidth = imageWidth;
-   this->imageHeight = imageHeight; 
+   this->imageHeight = imageHeight;
+   std::cout << objFileName << endl;
    objReader = new OBJReader(objFileName);
    camera = new Camera(cameraFileName);
    MTLReader mtlReader(objReader->mtlFileName.c_str());
