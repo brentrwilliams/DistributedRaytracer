@@ -23,7 +23,7 @@ Raytracer::Raytracer(int imageWidth, int imageHeight, char* objFileName, char* c
       
    for( std::map<std::string, Material>::iterator matIt=materials.begin(); matIt!=materials.end(); ++matIt)
    {
-       //std::cout << (*matIt).second << endl;
+       std::cout << (*matIt).second << endl;
    }
    
    antiAliasing = true;
@@ -103,9 +103,9 @@ void Raytracer::trace()
          rayCalcInfo.j = j;
          
          //if (!antiAliasing)
-         //   color = calculatePixelColor(rayCalcInfo, i, j);
+            color = calculatePixelColor(rayCalcInfo, i, j);
          //else
-            color = calculateAAPixelColor(rayCalcInfo, i, j);
+         //   color = calculateAAPixelColor(rayCalcInfo, i, j);
          
          image.r[i][j] = color.x;
          image.g[i][j] = color.y;

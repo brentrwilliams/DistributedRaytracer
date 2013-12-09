@@ -54,7 +54,7 @@ MeshData* OBJReader::getMeshData()
    std::vector<Face> faces;
    std::vector<float> textureCoordinates;
    
-   //std::cout << "In getMesh()\n";
+   std::cout << "In getMesh()\n";
    
    while(objFile.good() && !done)
    {
@@ -63,7 +63,7 @@ MeshData* OBJReader::getMeshData()
       strcpy(charBuffer, stringBuffer.c_str());
       word = strtok(charBuffer, " \t");
       
-      //std::cout << "Processing line: " << fileBuffer << "\n";
+      std::cout << "Processing line: " << fileBuffer << "\n";
       
       if (gHit && word != NULL && strcmp(word, "v") == 0)
       {
@@ -83,7 +83,7 @@ MeshData* OBJReader::getMeshData()
          
          while (word != NULL && strlen(word) > 1)
          {
-            //std::cout << "\tword: " << word << " with length: " << strlen(word) << "\n";
+           // std::cout << "\tword: " << word << " with length: " << strlen(word) << "\n";
             vertices.push_back(atof(word));
             word = strtok(NULL, " \t");
          }
@@ -105,12 +105,13 @@ MeshData* OBJReader::getMeshData()
          Face face;
          face.numVertices = 0;
          
-         //std::cout << "In f\n";
+         std::cout << "In f\n";
          
          word = strtok(NULL, " \t");
-         while (word != NULL && strlen(word) > 1)
+         while (word != NULL && strlen(word) > 0)
          {
             faceNum = atoi(word);
+            std::cout << "\tword: " << word << " with val: " << faceNum << "\n";
             if (faceNum >= 0)
             {
                face.vertexNumbers[face.numVertices] = faceNum;
@@ -125,6 +126,7 @@ MeshData* OBJReader::getMeshData()
          }
          
          faces.push_back(face);
+         std::cout << faces.size() << "\n";
       }
       else if (word != NULL && strcmp(word, "g") == 0)
       {
@@ -147,7 +149,9 @@ MeshData* OBJReader::getMeshData()
       }
       
    }
-
+   
+   std::cout << "before: faces.size(): " << faces.size() << "\n";
+   
    facesVerticesTexCoordsToTriangles(vertices, faces, textureCoordinates, meshDataPtr);
    
    return meshDataPtr;
@@ -158,7 +162,7 @@ void OBJReader::facesVerticesTexCoordsToTriangles(std::vector<float> vertices,
 {
    int i, j;
    
-   //std::cout << "faces.size(): " << faces.size() << "\n";
+   std::cout << "after: faces.size(): " << faces.size() << "\n";
    
    for (i = 0; i < faces.size(); i++)
    {
