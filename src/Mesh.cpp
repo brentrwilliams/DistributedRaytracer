@@ -17,7 +17,7 @@ Mesh::Mesh(std::vector<float>* triangleVertices, std::vector<float>* textureCoor
    verticesAndTexCoordsToTriangles(triangleVertices, textureCoordinates);
    calculateBoundingBox();
    calculateFaceNormals();
-   calculateVertexNormals();
+   //calculateVertexNormals();
    bvh = new MeshBVH(triangles);
 }
 
@@ -28,7 +28,7 @@ Mesh::Mesh(MeshData meshData)
    verticesAndTexCoordsToTriangles(meshData.triangleVertices, meshData.textureCoordinates);
    calculateBoundingBox();
    calculateFaceNormals();
-   calculateVertexNormals();
+   //calculateVertexNormals();
    bvh = new MeshBVH(triangles);
 }
 

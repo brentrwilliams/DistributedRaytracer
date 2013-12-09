@@ -96,11 +96,13 @@ void Triangle::calculateFaceNormal()
 
 glm::vec3 Triangle::getNormal(glm::vec3 pt)
 {
-   float alpha, beta, gamma;
+   /*float alpha, beta, gamma;
    glm::vec3 normal;
    calculateBarycentricCoordinates(&alpha, &beta, &gamma, pt);
    normal = normal1 * alpha + normal2 * beta + normal3 * gamma;
    return normal;
+   */
+   return faceNormal;
 }
 
 void Triangle::calculateBoundingBox()
